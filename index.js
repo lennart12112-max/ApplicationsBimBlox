@@ -1,5 +1,7 @@
-require('dotenv').config();
-const fs = require('fs');
+// Lade dotenv und zeige ihm, wo die Datei liegt
+require("dotenv").config({ path: "/etc/secrets/.env" });
+
+const fs = require("fs");
 const {
   Client,
   GatewayIntentBits,
@@ -13,17 +15,24 @@ const {
   TextInputStyle,
   EmbedBuilder,
   Events
-} = require('discord.js');
-const { REST } = require('@discordjs/rest');
+} = require("discord.js");
+const { REST } = require("@discordjs/rest");
 
 const client = new Client({
   intents: [GatewayIntentBits.Guilds],
   partials: [Partials.Channel]
 });
 
+// Variablen aus .env (Render Secret File)
 const TOKEN = process.env.DISCORD_TOKEN;
 const CLIENT_ID = process.env.CLIENT_ID;
 const GUILD_ID = process.env.GUILD_ID;
+
+// ⚠️ Falls eine fehlt → sofort Fehler werfen
+if (!TOKEN || !CLIENT_ID || !GUILD_ID) {
+  console.error("❌ Missing environment variables. Please check your .env file in Render!");
+  process.exit(1);
+}
 
 const APPLICATION_CHANNEL = "1411363932290941010";
 
@@ -286,3 +295,4 @@ client.on(Events.InteractionCreate, async (interaction) => {
 });
 
 client.login(TOKEN);
+
