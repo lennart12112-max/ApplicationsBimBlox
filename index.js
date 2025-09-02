@@ -80,7 +80,8 @@ if (fs.existsSync(filePath)) {
     "Support Application": { status: "Closed", description: "", link: "", messageId: null },
     "Manager Application": { status: "Closed", description: "", link: "", messageId: null },
     "Moderation Application": { status: "Closed", description: "", link: "", messageId: null },
-    "Supervisor Application": { status: "Closed", description: "", link: "", messageId: null } // Added application
+    "Supervisor Application": { status: "Closed", description: "", link: "", messageId: null },
+    "Trainer Application": { status: "Closed", description: "", link: "", messageId: null } // Added Trainer Application
   };
   fs.writeFileSync(filePath, JSON.stringify(applications, null, 2));
 }
