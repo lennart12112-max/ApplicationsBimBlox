@@ -1,7 +1,11 @@
-// Lade dotenv und zeige ihm, wo die Datei liegt
+// Load dotenv and specify the file location
 require("dotenv").config({ path: "/etc/secrets/.env" });
 
 const fs = require("fs");
+const express = require("express"); // Added Express
+const app = express(); // Initialize Express
+const port = process.env.PORT || 4000; // Define port for Express
+
 const {
   Client,
   GatewayIntentBits,
@@ -23,12 +27,12 @@ const client = new Client({
   partials: [Partials.Channel]
 });
 
-// Variablen aus .env (Render Secret File)
+// Variables from .env (Render Secret File)
 const TOKEN = process.env.DISCORD_TOKEN;
 const CLIENT_ID = process.env.CLIENT_ID;
 const GUILD_ID = process.env.GUILD_ID;
 
-// ⚠️ Falls eine fehlt → sofort Fehler werfen
+// ⚠️ Throw error if any variable is missing
 if (!TOKEN || !CLIENT_ID || !GUILD_ID) {
   console.error("❌ Missing environment variables. Please check your .env file in Render!");
   process.exit(1);
@@ -294,5 +298,13 @@ client.on(Events.InteractionCreate, async (interaction) => {
   }
 });
 
-client.login(TOKEN);
+// Express server setup
+app.get('/', (req, res) => {
+  res.send('Hello World!');
+});
 
+app.listen(port, () => {
+  console.log(`Example app listening on port ${port}`);
+});
+
+client.login(TOKEN);
