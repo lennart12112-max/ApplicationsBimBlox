@@ -4,7 +4,7 @@ require("dotenv").config({ path: "/etc/secrets/.env" });
 const fs = require("fs");
 const express = require("express"); // Added Express
 const app = express(); // Initialize Express
-const port = process.env.PORT || 4000; // Define port for Express
+const PORT = process.env.PORT || 3000; // Define port for Express
 
 const {
   Client,
@@ -171,9 +171,10 @@ client.on('ready', async () => {
 
 // Whitelisted role IDs
 const WHITELISTED_ROLES = [
-  "1208523545806639164",
   "1351576617000108082",
-  "1350875371393781891"
+  "1350875371393781891",
+  "1230911236208857199",
+  "1230911236208857200"
 ];
 
 client.on(Events.InteractionCreate, async (interaction) => {
@@ -300,12 +301,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
 });
 
 // Express server setup
-app.get('/', (req, res) => {
-  res.send('Hello World!');
-});
-
-app.listen(port, () => {
-  console.log(`Example app listening on port ${port}`);
-});
+app.get("/", (req, res) => res.send("Bot is running!"));
+app.listen(PORT, () => console.log(`Web server running on port ${PORT}`));
 
 client.login(TOKEN);
