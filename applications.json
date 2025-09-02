@@ -1,0 +1,38 @@
+{
+  "Public Relations Application": {
+    "status": "Closed",
+    "description": "",
+    "link": "",
+    "messageId": "1412463568577761381"
+  },
+  "Human Resources Application": {
+    "status": "Closed",
+    "description": "",
+    "link": "",
+    "messageId": "1412466341813944412"
+  },
+  "Support Application": {
+    "status": "Closed",
+    "description": "",
+    "link": "",
+    "messageId": "1412463574013710500"
+  },
+  "Manager Application": {
+    "status": "Closed",
+    "description": "",
+    "link": "",
+    "messageId": "1412463577323012238"
+  },
+  "Moderation Application": {
+    "status": "Closed",
+    "description": "",
+    "link": "",
+    "messageId": "1412463579495530507"
+  },
+  "Supervisor Application": {
+    "status": "Closed",
+    "description": "",
+    "link": "",
+    "messageId": "1412466849932775497"
+  }
+}
