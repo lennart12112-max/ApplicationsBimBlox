@@ -1,10 +1,11 @@
 const express = require("express");
+const fs = require("fs");
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Kleine Web-Route für Render
 app.get("/", (req, res) => res.send("Bot is running!"));
 app.listen(PORT, () => console.log(`✅ Web server running on port ${PORT}`));
-
 
 const {
   Client,
@@ -22,17 +23,18 @@ const {
 } = require("discord.js");
 const { REST } = require("@discordjs/rest");
 
+// Discord Client
 const client = new Client({
   intents: [GatewayIntentBits.Guilds],
   partials: [Partials.Channel]
 });
 
-// Variables from .env (Render Secret File)
+// Variablen aus .env (Render Secret File)
 const TOKEN = process.env.DISCORD_TOKEN;
 const CLIENT_ID = process.env.CLIENT_ID;
 const GUILD_ID = process.env.GUILD_ID;
 
-// ⚠️ Throw error if any variable is missing
+// ⚠️ Error wenn Variablen fehlen
 if (!TOKEN || !CLIENT_ID || !GUILD_ID) {
   console.error("❌ Missing environment variables. Please check your .env file in Render!");
   process.exit(1);
@@ -40,7 +42,7 @@ if (!TOKEN || !CLIENT_ID || !GUILD_ID) {
 
 const APPLICATION_CHANNEL = "1411363932290941010";
 
-// Command registration
+// Slash Commands
 const commands = [
   new SlashCommandBuilder()
     .setName('application')
@@ -61,13 +63,13 @@ const rest = new REST({ version: '10' }).setToken(TOKEN);
       Routes.applicationGuildCommands(CLIENT_ID, GUILD_ID),
       { body: commands },
     );
-    console.log('Commands registered.');
+    console.log('✅ Commands registered.');
   } catch (err) {
     console.error(err);
   }
 })();
 
-// Load applications from file or set default values
+// Load applications
 let applications = {};
 const filePath = './applications.json';
 
@@ -81,17 +83,16 @@ if (fs.existsSync(filePath)) {
     "Manager Application": { status: "Closed", description: "", link: "", messageId: null },
     "Moderation Application": { status: "Closed", description: "", link: "", messageId: null },
     "Supervisor Application": { status: "Closed", description: "", link: "", messageId: null },
-    "Trainer Application": { status: "Closed", description: "", link: "", messageId: null } // Added Trainer Application
+    "Trainer Application": { status: "Closed", description: "", link: "", messageId: null }
   };
   fs.writeFileSync(filePath, JSON.stringify(applications, null, 2));
 }
 
-// Function to save application data
 function saveApplications() {
   fs.writeFileSync(filePath, JSON.stringify(applications, null, 2));
 }
 
-// Function to create a detailed embed based on status
+// Embed für einzelne Application
 function createEmbed(appName, appData) {
   if (appData.status === "Open") {
     return new EmbedBuilder()
@@ -117,12 +118,12 @@ function createEmbed(appName, appData) {
   }
 }
 
-// Function to create a modern and visually appealing embed for all applications
+// Embed für Übersicht aller Applications
 function createApplicationsEmbed(applications) {
   const embed = new EmbedBuilder()
     .setTitle("📋 Application Overview")
     .setDescription("Below is the current status of all applications. If an application is not open, don't worry, it will open soon.")
-    .setColor("#5865F2") // Discord's primary blue color
+    .setColor("#5865F2")
     .setFooter({ text: "Last updated", iconURL: client.user.displayAvatarURL() })
     .setTimestamp();
 
@@ -141,16 +142,15 @@ function createApplicationsEmbed(applications) {
   return embed;
 }
 
-// On bot start, check and send a single embed
+// On Ready
 client.on('ready', async () => {
-  console.log(`Bot logged in as ${client.user.tag}`);
+  console.log(`🤖 Bot logged in as ${client.user.tag}`);
   const channel = await client.channels.fetch(APPLICATION_CHANNEL);
 
   const embed = createApplicationsEmbed(applications);
 
   let messageId = null;
 
-  // Check if a message already exists
   if (fs.existsSync('./embedMessageId.json')) {
     messageId = JSON.parse(fs.readFileSync('./embedMessageId.json', 'utf8')).messageId;
   }
@@ -169,7 +169,7 @@ client.on('ready', async () => {
   }
 });
 
-// Whitelisted role IDs
+// Rollen-Whitelist
 const WHITELISTED_ROLES = [
   "1351576617000108082",
   "1350875371393781891",
@@ -177,9 +177,9 @@ const WHITELISTED_ROLES = [
   "1230911236208857200"
 ];
 
+// Interaction Handler
 client.on(Events.InteractionCreate, async (interaction) => {
   if (interaction.isChatInputCommand()) {
-    // Check if the user has a whitelisted role
     const memberRoles = interaction.member.roles.cache.map(role => role.id);
     const hasPermission = WHITELISTED_ROLES.some(role => memberRoles.includes(role));
 
@@ -220,7 +220,6 @@ client.on(Events.InteractionCreate, async (interaction) => {
     }
   }
 
-  // Selection for opening
   if (interaction.isStringSelectMenu()) {
     if (interaction.customId === 'application_open_select') {
       const selected = interaction.values[0];
@@ -255,9 +254,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
       applications[selected].description = "";
       applications[selected].link = "";
 
-      // Update the main overview embed
       const updatedEmbed = createApplicationsEmbed(applications);
-
       const channel = await client.channels.fetch(APPLICATION_CHANNEL);
 
       try {
@@ -273,18 +270,14 @@ client.on(Events.InteractionCreate, async (interaction) => {
     }
   }
 
-  // Modal submit
   if (interaction.isModalSubmit()) {
     const selected = interaction.customId.replace('modal_', '');
     const description = interaction.fields.getTextInputValue('description');
     const link = interaction.fields.getTextInputValue('link');
 
-    // Update application data
     applications[selected] = { ...applications[selected], status: "Open", description, link };
 
-    // Update the main overview embed
     const updatedEmbed = createApplicationsEmbed(applications);
-
     const channel = await client.channels.fetch(APPLICATION_CHANNEL);
 
     try {
@@ -300,9 +293,4 @@ client.on(Events.InteractionCreate, async (interaction) => {
   }
 });
 
-// Express server setup
-app.get("/", (req, res) => res.send("Bot is running!"));
-app.listen(PORT, () => console.log(`Web server running on port ${PORT}`));
-
 client.login(TOKEN);
-
