@@ -171,10 +171,10 @@ client.on('ready', async () => {
 
 // Rollen-Whitelist
 const WHITELISTED_ROLES = [
+  "1230911236208857199",
+  "1208523545806639164",
   "1351576617000108082",
   "1350875371393781891",
-  "1230911236208857199",
-  "1230911236208857200"
 ];
 
 // Interaction Handler
@@ -294,3 +294,4 @@ client.on(Events.InteractionCreate, async (interaction) => {
 });
 
 client.login(TOKEN);
+
