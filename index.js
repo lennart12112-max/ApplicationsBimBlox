@@ -1,10 +1,10 @@
-// Load dotenv and specify the file location
-require("dotenv").config({ path: "/etc/secrets/.env" });
+const express = require("express");
+const app = express();
+const PORT = process.env.PORT || 3000;
 
-const fs = require("fs");
-const express = require("express"); // Added Express
-const app = express(); // Initialize Express
-const PORT = process.env.PORT || 3000; // Define port for Express
+app.get("/", (req, res) => res.send("Bot is running!"));
+app.listen(PORT, () => console.log(`✅ Web server running on port ${PORT}`));
+
 
 const {
   Client,
@@ -305,3 +305,4 @@ app.get("/", (req, res) => res.send("Bot is running!"));
 app.listen(PORT, () => console.log(`Web server running on port ${PORT}`));
 
 client.login(TOKEN);
+
