@@ -175,6 +175,7 @@ const WHITELISTED_ROLES = [
   "1208523545806639164",
   "1351576617000108082",
   "1350875371393781891",
+  "1412858462496362566"
 ];
 
 // Interaction Handler
@@ -294,4 +295,5 @@ client.on(Events.InteractionCreate, async (interaction) => {
 });
 
 client.login(TOKEN);
+
 
