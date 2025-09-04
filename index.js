@@ -1,12 +1,23 @@
+// ==========================
+// Setup Express (Render Ping)
+// ==========================
 const express = require("express");
 const fs = require("fs");
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Kleine Web-Route für Render
-app.get("/", (req, res) => res.send("Bot is running!"));
+// Route, die wie eine echte Website wirkt
+app.get("/", (req, res) => {
+  res.setHeader("Content-Type", "text/html");
+  res.send("<h1>✅ Bot is running on Render!</h1><p>This page keeps the bot alive.</p>");
+});
+
 app.listen(PORT, () => console.log(`✅ Web server running on port ${PORT}`));
 
+
+// ==========================
+// Discord Bot Setup
+// ==========================
 const {
   Client,
   GatewayIntentBits,
@@ -23,18 +34,18 @@ const {
 } = require("discord.js");
 const { REST } = require("@discordjs/rest");
 
-// Discord Client
 const client = new Client({
   intents: [GatewayIntentBits.Guilds],
   partials: [Partials.Channel]
 });
 
-// Variablen aus .env (Render Secret File)
+// ==========================
+// ENV Variablen aus Render
+// ==========================
 const TOKEN = process.env.DISCORD_TOKEN;
 const CLIENT_ID = process.env.CLIENT_ID;
 const GUILD_ID = process.env.GUILD_ID;
 
-// ⚠️ Error wenn Variablen fehlen
 if (!TOKEN || !CLIENT_ID || !GUILD_ID) {
   console.error("❌ Missing environment variables. Please check your .env file in Render!");
   process.exit(1);
@@ -42,7 +53,9 @@ if (!TOKEN || !CLIENT_ID || !GUILD_ID) {
 
 const APPLICATION_CHANNEL = "1411363932290941010";
 
+// ==========================
 // Slash Commands
+// ==========================
 const commands = [
   new SlashCommandBuilder()
     .setName('application')
@@ -69,7 +82,10 @@ const rest = new REST({ version: '10' }).setToken(TOKEN);
   }
 })();
 
-// Load applications
+
+// ==========================
+// Application Daten laden
+// ==========================
 let applications = {};
 const filePath = './applications.json';
 
@@ -84,43 +100,19 @@ if (fs.existsSync(filePath)) {
     "Moderation Application": { status: "Closed", description: "", link: "", messageId: null },
     "Supervisor Application": { status: "Closed", description: "", link: "", messageId: null },
     "Trainer Application": { status: "Closed", description: "", link: "", messageId: null },
-    "Head Office Application": { status: "Closed", description: "This application is only opened **rarely**.", link: "N/A", messageId: null } // Added Head Office Application
+    "Head Office Application": { status: "Closed", description: "This application is only opened **rarely**.", link: "N/A", messageId: null }
   };
   fs.writeFileSync(filePath, JSON.stringify(applications, null, 2));
 }
 
-// Save applications to persist data across restarts
 function saveApplications() {
   fs.writeFileSync(filePath, JSON.stringify(applications, null, 2));
 }
 
-// Embed für einzelne Application
-function createEmbed(appName, appData) {
-  if (appData.status === "Open") {
-    return new EmbedBuilder()
-      .setTitle(`📂 ${appName}`)
-      .setDescription(appData.description)
-      .addFields(
-        { name: "🔗 Link", value: `[Click here](${appData.link})`, inline: true },
-        { name: "📌 Status", value: "✅ Open", inline: true }
-      )
-      .setColor('Green')
-      .setFooter({ text: "Application Status: Open", iconURL: client.user.displayAvatarURL() })
-      .setTimestamp();
-  } else {
-    return new EmbedBuilder()
-      .setTitle(`📂 ${appName}`)
-      .setDescription(`This application is currently closed. Please check back later.`)
-      .addFields(
-        { name: "📌 Status", value: "❌ Closed", inline: true }
-      )
-      .setColor('Red')
-      .setFooter({ text: "Application Status: Closed", iconURL: client.user.displayAvatarURL() })
-      .setTimestamp();
-  }
-}
 
-// Embed für Übersicht aller Applications
+// ==========================
+// Embed Builder
+// ==========================
 function createApplicationsEmbed(applications) {
   const embed = new EmbedBuilder()
     .setTitle("📋 Application Overview")
@@ -144,42 +136,42 @@ function createApplicationsEmbed(applications) {
   return embed;
 }
 
+
+// ==========================
 // On Ready
+// ==========================
 client.on('ready', async () => {
   console.log(`🤖 Bot logged in as ${client.user.tag}`);
   const channel = await client.channels.fetch(APPLICATION_CHANNEL);
-
   const embed = createApplicationsEmbed(applications);
 
   let messageId = null;
-
-  // Check if the embedMessageId.json file exists
   if (fs.existsSync('./embedMessageId.json')) {
     messageId = JSON.parse(fs.readFileSync('./embedMessageId.json', 'utf8')).messageId;
   }
 
   try {
     if (messageId) {
-      // Try to fetch the existing message
       const msg = await channel.messages.fetch(messageId);
-      await msg.edit({ embeds: [embed] }); // Edit the existing message
+      await msg.edit({ embeds: [embed] });
       console.log("✅ Existing embed message updated.");
     } else {
-      // If no message ID exists, send a new message
       const newMsg = await channel.send({ embeds: [embed] });
       fs.writeFileSync('./embedMessageId.json', JSON.stringify({ messageId: newMsg.id }));
       console.log("✅ New embed message sent.");
     }
   } catch (error) {
-    // If the message was deleted or cannot be fetched, send a new message
-    console.error("⚠️ Failed to fetch the existing message. Sending a new one...");
+    console.error("⚠️ Failed to fetch existing message. Sending a new one...");
     const newMsg = await channel.send({ embeds: [embed] });
     fs.writeFileSync('./embedMessageId.json', JSON.stringify({ messageId: newMsg.id }));
     console.log("✅ New embed message sent.");
   }
 });
 
+
+// ==========================
 // Rollen-Whitelist
+// ==========================
 const WHITELISTED_ROLES = [
   "1230911236208857199",
   "1208523545806639164",
@@ -188,17 +180,17 @@ const WHITELISTED_ROLES = [
   "1412858462496362566"
 ];
 
+
+// ==========================
 // Interaction Handler
+// ==========================
 client.on(Events.InteractionCreate, async (interaction) => {
   if (interaction.isChatInputCommand()) {
     const memberRoles = interaction.member.roles.cache.map(role => role.id);
     const hasPermission = WHITELISTED_ROLES.some(role => memberRoles.includes(role));
 
     if (!hasPermission) {
-      await interaction.reply({
-        content: "❌ You do not have permission to use this command.",
-        ephemeral: true
-      });
+      await interaction.reply({ content: "❌ You do not have permission to use this command.", ephemeral: true });
       return;
     }
 
@@ -304,4 +296,8 @@ client.on(Events.InteractionCreate, async (interaction) => {
   }
 });
 
+
+// ==========================
+// Start Discord Bot
+// ==========================
 client.login(TOKEN);
