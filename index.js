@@ -83,11 +83,13 @@ if (fs.existsSync(filePath)) {
     "Manager Application": { status: "Closed", description: "", link: "", messageId: null },
     "Moderation Application": { status: "Closed", description: "", link: "", messageId: null },
     "Supervisor Application": { status: "Closed", description: "", link: "", messageId: null },
-    "Trainer Application": { status: "Closed", description: "", link: "", messageId: null }
+    "Trainer Application": { status: "Closed", description: "", link: "", messageId: null },
+    "Head Office Application": { status: "Closed", description: "This application is only opened **rarely**.", link: "N/A", messageId: null } // Added Head Office Application
   };
   fs.writeFileSync(filePath, JSON.stringify(applications, null, 2));
 }
 
+// Save applications to persist data across restarts
 function saveApplications() {
   fs.writeFileSync(filePath, JSON.stringify(applications, null, 2));
 }
@@ -151,21 +153,29 @@ client.on('ready', async () => {
 
   let messageId = null;
 
+  // Check if the embedMessageId.json file exists
   if (fs.existsSync('./embedMessageId.json')) {
     messageId = JSON.parse(fs.readFileSync('./embedMessageId.json', 'utf8')).messageId;
   }
 
   try {
     if (messageId) {
+      // Try to fetch the existing message
       const msg = await channel.messages.fetch(messageId);
-      await msg.edit({ embeds: [embed] });
+      await msg.edit({ embeds: [embed] }); // Edit the existing message
+      console.log("✅ Existing embed message updated.");
     } else {
+      // If no message ID exists, send a new message
       const newMsg = await channel.send({ embeds: [embed] });
       fs.writeFileSync('./embedMessageId.json', JSON.stringify({ messageId: newMsg.id }));
+      console.log("✅ New embed message sent.");
     }
-  } catch {
+  } catch (error) {
+    // If the message was deleted or cannot be fetched, send a new message
+    console.error("⚠️ Failed to fetch the existing message. Sending a new one...");
     const newMsg = await channel.send({ embeds: [embed] });
     fs.writeFileSync('./embedMessageId.json', JSON.stringify({ messageId: newMsg.id }));
+    console.log("✅ New embed message sent.");
   }
 });
 
@@ -295,5 +305,3 @@ client.on(Events.InteractionCreate, async (interaction) => {
 });
 
 client.login(TOKEN);
-
-
